@@ -24,6 +24,7 @@ function NotificationList() {
   const [editingId, setEditingId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
 
   useEffect(() => {
     calculateTotals();
@@ -93,6 +94,31 @@ function NotificationList() {
            amount.includes(searchLower) ||
            date.includes(searchLower);
   });
+
+  const sortedNotifications = [...filteredNotifications].sort((a, b) => {
+    if (a[sortConfig.key] < b[sortConfig.key]) {
+      return sortConfig.direction === 'asc' ? -1 : 1;
+    }
+    if (a[sortConfig.key] > b[sortConfig.key]) {
+      return sortConfig.direction === 'asc' ? 1 : -1;
+    }
+    return 0;
+  });
+
+  const requestSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const getSortIndicator = (key) => {
+    if (sortConfig.key === key) {
+      return sortConfig.direction === 'asc' ? '▲' : '▼';
+    }
+    return '';
+  };
 
   const openTransactionModal = (transaction) => {
     setSelectedTransaction(transaction);
@@ -165,74 +191,78 @@ function NotificationList() {
       </Modal>
 
       <h2 className="text-xl sm:text-2xl font-bold mb-2">Recent Transactions</h2>
-      <ul className="space-y-4">
-        {filteredNotifications.map((notification) => {
-          const amountInGBP = notification.amount * exchangeRates[notification.currency];
-          return (
-            <li key={notification.id} className="bg-white shadow rounded-lg p-4 cursor-pointer" onClick={() => openTransactionModal(notification)}>
-              {editingId === notification.id ? (
-                <ManualEntryForm
-                  initialEntry={notification}
-                  onSubmit={updateEntry}
-                  onCancel={() => setEditingId(null)}
-                />
-              ) : (
-                <div className="flex flex-col sm:flex-row justify-between items-start">
-                  <div className="mb-2 sm:mb-0">
-                    <p className="font-semibold">{notification.store}</p>
-                    <p className="text-gray-600">
-                      {formatCurrency(notification.amount, notification.currency)}
-                      {notification.currency !== 'GBP' && (
-                        <span className="ml-2 text-sm text-gray-500">
-                          ({formatCurrency(amountInGBP, 'GBP')})
-                        </span>
-                      )}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {new Date(notification.date).toLocaleString()}
-                    </p>
-                    <p className="text-sm text-gray-700 mt-1">{notification.description}</p>
-                  </div>
-                  <div className="flex flex-col items-start sm:items-end">
-                    {notification.image && (
-                      <img
-                        src={notification.image}
-                        alt="Receipt"
-                        className="mb-2 w-20 h-20 object-cover"
-                      />
+      <div className="overflow-x-auto">
+        <table className="w-full table-auto">
+          <thead>
+            <tr className="bg-gray-200">
+              <th className="px-4 py-2 cursor-pointer" onClick={() => requestSort('store')}>
+                Store {getSortIndicator('store')}
+              </th>
+              <th className="px-4 py-2 cursor-pointer" onClick={() => requestSort('amount')}>
+                Amount {getSortIndicator('amount')}
+              </th>
+              <th className="px-4 py-2 cursor-pointer" onClick={() => requestSort('date')}>
+                Date {getSortIndicator('date')}
+              </th>
+              <th className="px-4 py-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sortedNotifications.map((notification) => {
+              const amountInGBP = notification.amount * exchangeRates[notification.currency];
+              return (
+                <tr key={notification.id} className="border-b" onClick={() => openTransactionModal(notification)}>
+                  <td className="px-4 py-2">{notification.store}</td>
+                  <td className="px-4 py-2">
+                    {formatCurrency(notification.amount, notification.currency)}
+                    {notification.currency !== 'GBP' && (
+                      <span className="ml-2 text-sm text-gray-500">
+                        ({formatCurrency(amountInGBP, 'GBP')})
+                      </span>
                     )}
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingId(notification.id);
-                        }}
-                        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded text-sm"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteEntry(notification.id);
-                        }}
-                        className="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded text-sm"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </li>
-          );
-        })}
-      </ul>
+                  </td>
+                  <td className="px-4 py-2">{new Date(notification.date).toLocaleString()}</td>
+                  <td className="px-4 py-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingId(notification.id);
+                      }}
+                      className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded text-sm mr-2"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteEntry(notification.id);
+                      }}
+                      className="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded text-sm"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
       <TransactionModal
         transaction={selectedTransaction}
         onClose={closeTransactionModal}
         formatCurrency={formatCurrency}
       />
+      <Modal isOpen={editingId !== null} onClose={() => setEditingId(null)}>
+        <ManualEntryForm
+          initialEntry={notifications.find(n => n.id === editingId)}
+          onSubmit={(updatedEntry) => {
+            updateEntry(updatedEntry);
+            setEditingId(null);
+          }}
+          onCancel={() => setEditingId(null)}
+        />
+      </Modal>
     </div>
   );
 }
