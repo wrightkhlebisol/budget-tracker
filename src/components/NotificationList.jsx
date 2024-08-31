@@ -20,6 +20,7 @@ function NotificationList() {
   const [remaining, setRemaining] = useState(monthlyBudget);
   const [showManualEntry, setShowManualEntry] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     calculateTotals();
@@ -77,6 +78,10 @@ function NotificationList() {
     setNotifications(notifications.filter(n => n.id !== id));
   };
 
+  const filteredNotifications = notifications.filter(notification =>
+    notification.store.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="max-w-4xl mx-auto mt-8 px-4">
       <h1 className="text-2xl font-bold mb-4">Budget Tracker</h1>
@@ -118,6 +123,18 @@ function NotificationList() {
           Add Manual Entry
         </button>
       </div>
+
+      {/* Add search input */}
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Search by store name..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
       {showManualEntry && (
         <ManualEntryForm 
           onSubmit={addManualEntry} 
@@ -126,7 +143,7 @@ function NotificationList() {
       )}
       <h2 className="text-xl font-bold mb-2">Recent Transactions</h2>
       <ul className="space-y-4">
-        {notifications.map((notification) => {
+        {filteredNotifications.map((notification) => {
           const amountInGBP = notification.amount * exchangeRates[notification.currency];
           return (
             <li key={notification.id} className="bg-white shadow rounded-lg p-4">
