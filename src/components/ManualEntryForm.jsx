@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 function ManualEntryForm({ onSubmit, onCancel, initialEntry = null }) {
   const [entry, setEntry] = useState(initialEntry || { 

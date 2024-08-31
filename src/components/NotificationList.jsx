@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import ManualEntryForm from './ManualEntryForm';
 
 const dummyNotifications = [
@@ -78,9 +78,16 @@ function NotificationList() {
     setNotifications(notifications.filter(n => n.id !== id));
   };
 
-  const filteredNotifications = notifications.filter(notification =>
-    notification.store.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredNotifications = notifications.filter(notification => {
+    const searchLower = searchTerm.toLowerCase();
+    const storeName = notification.store.toLowerCase();
+    const description = notification.description.toLowerCase();
+    const amount = notification.amount.toString();
+    
+    return storeName.includes(searchLower) || 
+           description.includes(searchLower) || 
+           amount.includes(searchLower);
+  });
 
   return (
     <div className="max-w-4xl mx-auto mt-8 px-4">
@@ -124,11 +131,11 @@ function NotificationList() {
         </button>
       </div>
 
-      {/* Add search input */}
+      {/* Update search input placeholder */}
       <div className="mb-4">
         <input
           type="text"
-          placeholder="Search by store name..."
+          placeholder="Search by store, description, or amount..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
