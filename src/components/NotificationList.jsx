@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import ManualEntryForm from './ManualEntryForm';
+import TransactionModal from './TransactionModal';
+import Modal from './Modal';
 
 const dummyNotifications = [
   { id: 1, store: "Walmart", amount: 52.99, currency: "USD", date: "2023-04-15T10:30:00Z", description: "Groceries" },
@@ -21,6 +23,7 @@ function NotificationList() {
   const [showManualEntry, setShowManualEntry] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
 
   useEffect(() => {
     calculateTotals();
@@ -91,27 +94,35 @@ function NotificationList() {
            date.includes(searchLower);
   });
 
+  const openTransactionModal = (transaction) => {
+    setSelectedTransaction(transaction);
+  };
+
+  const closeTransactionModal = () => {
+    setSelectedTransaction(null);
+  };
+
   return (
-    <div className="max-w-4xl mx-auto mt-8 px-4">
-      <h1 className="text-2xl font-bold mb-4">Budget Tracker</h1>
-      <div className="grid grid-cols-3 gap-4 mb-4">
+    <div className="max-w-7xl mx-auto mt-8 px-4 sm:px-6 lg:px-8">
+      <h1 className="text-2xl sm:text-3xl font-bold mb-4">Budget Tracker</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
         <div className="bg-white shadow rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-2">Monthly Budget</h2>
-          <p className="text-2xl font-bold">{formatCurrency(monthlyBudget, 'GBP')}</p>
+          <p className="text-xl sm:text-2xl font-bold">{formatCurrency(monthlyBudget, 'GBP')}</p>
         </div>
         <div className="bg-white shadow rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-2">Remaining</h2>
-          <p className="text-2xl font-bold text-green-600">{formatCurrency(remaining, 'GBP')}</p>
+          <p className="text-xl sm:text-2xl font-bold text-green-600">{formatCurrency(remaining, 'GBP')}</p>
         </div>
         <div className="bg-white shadow rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-2">Spent</h2>
-          <p className="text-2xl font-bold text-red-600">{formatCurrency(totalSpent, 'GBP')}</p>
+          <p className="text-xl sm:text-2xl font-bold text-red-600">{formatCurrency(totalSpent, 'GBP')}</p>
           <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
             <div className="bg-blue-600 h-2.5 rounded-full" style={{width: `${(totalSpent / monthlyBudget) * 100}%`}}></div>
           </div>
         </div>
       </div>
-      <div className="flex space-x-4 mb-4">
+      <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-4">
         <div className="flex-1">
           <input
             type="file"
@@ -127,13 +138,12 @@ function NotificationList() {
         </div>
         <button
           onClick={() => setShowManualEntry(true)}
-          className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+          className="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
         >
           Add Manual Entry
         </button>
       </div>
 
-      {/* Update search input placeholder */}
       <div className="mb-4">
         <input
           type="text"
@@ -144,18 +154,22 @@ function NotificationList() {
         />
       </div>
 
-      {showManualEntry && (
+      <Modal isOpen={showManualEntry} onClose={() => setShowManualEntry(false)}>
         <ManualEntryForm 
-          onSubmit={addManualEntry} 
+          onSubmit={(entry) => {
+            addManualEntry(entry);
+            setShowManualEntry(false);
+          }}
           onCancel={() => setShowManualEntry(false)} 
         />
-      )}
-      <h2 className="text-xl font-bold mb-2">Recent Transactions</h2>
+      </Modal>
+
+      <h2 className="text-xl sm:text-2xl font-bold mb-2">Recent Transactions</h2>
       <ul className="space-y-4">
         {filteredNotifications.map((notification) => {
           const amountInGBP = notification.amount * exchangeRates[notification.currency];
           return (
-            <li key={notification.id} className="bg-white shadow rounded-lg p-4">
+            <li key={notification.id} className="bg-white shadow rounded-lg p-4 cursor-pointer" onClick={() => openTransactionModal(notification)}>
               {editingId === notification.id ? (
                 <ManualEntryForm
                   initialEntry={notification}
@@ -163,8 +177,8 @@ function NotificationList() {
                   onCancel={() => setEditingId(null)}
                 />
               ) : (
-                <div className="flex justify-between items-start">
-                  <div>
+                <div className="flex flex-col sm:flex-row justify-between items-start">
+                  <div className="mb-2 sm:mb-0">
                     <p className="font-semibold">{notification.store}</p>
                     <p className="text-gray-600">
                       {formatCurrency(notification.amount, notification.currency)}
@@ -179,24 +193,29 @@ function NotificationList() {
                     </p>
                     <p className="text-sm text-gray-700 mt-1">{notification.description}</p>
                   </div>
-                  <div className="flex flex-col items-end">
+                  <div className="flex flex-col items-start sm:items-end">
                     {notification.image && (
                       <img
                         src={notification.image}
                         alt="Receipt"
-                        className="mb-2 w-20 h-20 object-cover cursor-pointer"
-                        onClick={() => window.open(notification.image, '_blank')}
+                        className="mb-2 w-20 h-20 object-cover"
                       />
                     )}
-                    <div>
+                    <div className="flex space-x-2">
                       <button
-                        onClick={() => setEditingId(notification.id)}
-                        className="mr-2 bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded text-sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingId(notification.id);
+                        }}
+                        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded text-sm"
                       >
                         Edit
                       </button>
                       <button
-                        onClick={() => deleteEntry(notification.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteEntry(notification.id);
+                        }}
                         className="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded text-sm"
                       >
                         Delete
@@ -209,6 +228,11 @@ function NotificationList() {
           );
         })}
       </ul>
+      <TransactionModal
+        transaction={selectedTransaction}
+        onClose={closeTransactionModal}
+        formatCurrency={formatCurrency}
+      />
     </div>
   );
 }
