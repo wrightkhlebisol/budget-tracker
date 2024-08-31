@@ -83,10 +83,12 @@ function NotificationList() {
     const storeName = notification.store.toLowerCase();
     const description = notification.description.toLowerCase();
     const amount = notification.amount.toString();
+    const date = new Date(notification.date).toLocaleDateString();
     
     return storeName.includes(searchLower) || 
            description.includes(searchLower) || 
-           amount.includes(searchLower);
+           amount.includes(searchLower) ||
+           date.includes(searchLower);
   });
 
   return (
@@ -135,7 +137,7 @@ function NotificationList() {
       <div className="mb-4">
         <input
           type="text"
-          placeholder="Search by store, description, or amount..."
+          placeholder="Search by store, description, amount, or date..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
