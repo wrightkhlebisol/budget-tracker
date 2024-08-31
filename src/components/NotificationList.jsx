@@ -128,6 +128,23 @@ function NotificationList() {
     setSelectedTransaction(null);
   };
 
+  const prepareEntryForEdit = (notification) => {
+    if (!notification) {
+      console.error('Notification not found');
+      return null;
+    }
+    console.log('Preparing entry for edit:', notification);
+    // If the notification doesn't have subProducts, create them from the description
+    if (!notification.subProducts) {
+      const subProducts = notification.description.split(', ').map(item => {
+        const [name, price] = item.split(': ');
+        return { name, price: parseFloat(price) };
+      });
+      return { ...notification, subProducts };
+    }
+    return notification;
+  };
+
   return (
     <div className="max-w-7xl mx-auto mt-8 px-4 sm:px-6 lg:px-8">
       <h1 className="text-2xl sm:text-3xl font-bold mb-4">Budget Tracker</h1>
@@ -211,6 +228,7 @@ function NotificationList() {
               <th className="px-4 py-2 cursor-pointer" onClick={() => requestSort('date')}>
                 Date {getSortIndicator('date')}
               </th>
+              <th className="px-4 py-2">Description</th>
               <th className="px-4 py-2">Actions</th>
             </tr>
           </thead>
@@ -229,6 +247,7 @@ function NotificationList() {
                     )}
                   </td>
                   <td className="px-4 py-2">{new Date(notification.date).toLocaleString()}</td>
+                  <td className="px-4 py-2">{notification.description}</td>
                   <td className="px-4 py-2">
                     <button
                       onClick={(e) => {
@@ -261,14 +280,16 @@ function NotificationList() {
         formatCurrency={formatCurrency}
       />
       <Modal isOpen={editingId !== null} onClose={() => setEditingId(null)}>
-        <ManualEntryForm
-          initialEntry={notifications.find(n => n.id === editingId)}
-          onSubmit={(updatedEntry) => {
-            updateEntry(updatedEntry);
-            setEditingId(null);
-          }}
-          onCancel={() => setEditingId(null)}
-        />
+        {editingId !== null && (
+          <ManualEntryForm
+            initialEntry={prepareEntryForEdit(notifications.find(n => n.id === editingId))}
+            onSubmit={(updatedEntry) => {
+              updateEntry(updatedEntry);
+              setEditingId(null);
+            }}
+            onCancel={() => setEditingId(null)}
+          />
+        )}
       </Modal>
     </div>
   );

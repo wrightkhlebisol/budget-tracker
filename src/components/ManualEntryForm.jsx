@@ -1,22 +1,41 @@
 import { useState, useEffect } from 'react';
 
 function ManualEntryForm({ onSubmit, onCancel, initialEntry = null }) {
-  const [entry, setEntry] = useState(initialEntry || { 
-    store: '', 
-    amount: '', 
-    currency: 'GBP', 
-    description: ''
+  const [entry, setEntry] = useState({
+    store: '',
+    amount: '',
+    currency: 'GBP',
+    date: new Date().toISOString().split('T')[0],
+    subProducts: [{ name: '', price: '' }]
   });
 
   useEffect(() => {
+    console.log('Initial entry:', initialEntry);
     if (initialEntry) {
-      setEntry(initialEntry);
+      setEntry({
+        ...initialEntry,
+        subProducts: initialEntry.subProducts || [{ name: '', price: '' }],
+        date: initialEntry.date ? initialEntry.date.split('T')[0] : new Date().toISOString().split('T')[0]
+      });
     }
   }, [initialEntry]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(entry);
+    const totalAmount = entry.subProducts.reduce((sum, product) => sum + Number(product.price), 0);
+    const description = entry.subProducts.map(product => `${product.name}: ${product.price}`).join(', ');
+    onSubmit({ ...entry, amount: totalAmount, description });
+  };
+
+  const addSubProduct = () => {
+    setEntry({ ...entry, subProducts: [...entry.subProducts, { name: '', price: '' }] });
+  };
+
+  const updateSubProduct = (index, field, value) => {
+    const updatedSubProducts = entry.subProducts.map((product, i) => 
+      i === index ? { ...product, [field]: value } : product
+    );
+    setEntry({ ...entry, subProducts: updatedSubProducts });
   };
 
   return (
@@ -32,21 +51,6 @@ function ManualEntryForm({ onSubmit, onCancel, initialEntry = null }) {
           placeholder="Store name"
           value={entry.store}
           onChange={(e) => setEntry({ ...entry, store: e.target.value })}
-          required
-        />
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="amount">
-          Amount
-        </label>
-        <input
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          id="amount"
-          type="number"
-          step="0.01"
-          placeholder="Amount"
-          value={entry.amount}
-          onChange={(e) => setEntry({ ...entry, amount: parseFloat(e.target.value) })}
           required
         />
       </div>
@@ -67,17 +71,50 @@ function ManualEntryForm({ onSubmit, onCancel, initialEntry = null }) {
         </select>
       </div>
       <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="description">
-          Description
+        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="date">
+          Date
         </label>
-        <textarea
+        <input
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          id="description"
-          placeholder="Transaction description"
-          value={entry.description}
-          onChange={(e) => setEntry({ ...entry, description: e.target.value })}
-          rows="3"
-        ></textarea>
+          id="date"
+          type="date"
+          value={entry.date}
+          onChange={(e) => setEntry({ ...entry, date: e.target.value })}
+          required
+        />
+      </div>
+      <div className="mb-4">
+        <label className="block text-gray-700 text-sm font-bold mb-2">
+          Sub Products
+        </label>
+        {entry.subProducts.map((product, index) => (
+          <div key={index} className="flex mb-2">
+            <input
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mr-2"
+              type="text"
+              placeholder="Product name"
+              value={product.name}
+              onChange={(e) => updateSubProduct(index, 'name', e.target.value)}
+              required
+            />
+            <input
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              type="number"
+              step="0.01"
+              placeholder="Price"
+              value={product.price}
+              onChange={(e) => updateSubProduct(index, 'price', e.target.value)}
+              required
+            />
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={addSubProduct}
+          className="mt-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+        >
+          Add Product
+        </button>
       </div>
       <div className="flex items-center justify-between">
         <button
