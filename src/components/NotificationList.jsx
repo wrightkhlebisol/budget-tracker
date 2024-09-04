@@ -1,20 +1,66 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import ManualEntryForm from './ManualEntryForm';
 import TransactionModal from './TransactionModal';
 import Modal from './Modal';
+import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 
 const dummyNotifications = [
-  { id: 1, store: "Walmart", amount: 52.99, currency: "USD", date: "2023-04-15T10:30:00Z", description: "Groceries" },
-  { id: 2, store: "Amazon", amount: 29.99, currency: "GBP", date: "2023-04-14T14:45:00Z", description: "Books" },
-  { id: 3, store: "Target", amount: 75.50, currency: "USD", date: "2023-04-13T09:15:00Z", description: "Home decor" },
-  { id: 4, store: "Best Buy", amount: 199.99, currency: "USD", date: "2023-04-12T16:20:00Z", description: "Electronics" },
-  { id: 5, store: "Starbucks", amount: 5.75, currency: "EUR", date: "2023-04-11T08:00:00Z", description: "Coffee" },
-  { id: 6, store: "Shoprite Nigeria", amount: 15000, currency: "NGN", date: "2023-04-10T12:30:00Z", description: "Groceries" },
-  { id: 7, store: "Jumia Nigeria", amount: 22500, currency: "NGN", date: "2023-04-09T15:45:00Z", description: "Electronics" },
+  { id: 1, store: "Walmart", amount: 52.99, currency: "USD", date: "2023-04-15T10:30:00Z", description: "Groceries", subEntries: [
+    { name: "Milk", price: 3.99 },
+    { name: "Bread", price: 2.50 },
+    { name: "Eggs", price: 4.50 },
+    { name: "Fruits", price: 15.00 },
+    { name: "Vegetables", price: 27.00 }
+  ]},
+  { id: 2, store: "Amazon", amount: 29.99, currency: "GBP", date: "2023-04-14T14:45:00Z", description: "Books", subEntries: [
+    { name: "Novel", price: 12.99 },
+    { name: "Cookbook", price: 17.00 }
+  ]},
+  { id: 3, store: "Target", amount: 75.50, currency: "USD", date: "2023-04-13T09:15:00Z", description: "Home decor", subEntries: [
+    { name: "Throw pillow", price: 20.00 },
+    { name: "Picture frame", price: 15.50 },
+    { name: "Vase", price: 40.00 }
+  ]},
+  { id: 4, store: "Best Buy", amount: 199.99, currency: "USD", date: "2023-04-12T16:20:00Z", description: "Electronics", subEntries: [
+    { name: "Bluetooth speaker", price: 79.99 },
+    { name: "HDMI cable", price: 20.00 },
+    { name: "Phone case", price: 30.00 },
+    { name: "Screen protector", price: 70.00 }
+  ]},
+  { id: 5, store: "Starbucks", amount: 5.75, currency: "EUR", date: "2023-04-11T08:00:00Z", description: "Coffee", subEntries: [
+    { name: "Latte", price: 3.75 },
+    { name: "Muffin", price: 2.00 }
+  ]},
+  { id: 6, store: "Shoprite Nigeria", amount: 15000, currency: "NGN", date: "2023-04-10T12:30:00Z", description: "Groceries", subEntries: [
+    { name: "Rice", price: 5000 },
+    { name: "Beans", price: 3000 },
+    { name: "Vegetable oil", price: 2500 },
+    { name: "Tomatoes", price: 1500 },
+    { name: "Onions", price: 1000 },
+    { name: "Spices", price: 2000 }
+  ]},
+  { id: 7, store: "Jumia Nigeria", amount: 22500, currency: "NGN", date: "2023-04-09T15:45:00Z", description: "Electronics", subEntries: [
+    { name: "Power bank", price: 7500 },
+    { name: "USB cable", price: 2000 },
+    { name: "Earphones", price: 5000 },
+    { name: "Phone holder", price: 3000 },
+    { name: "Screen cleaner", price: 5000 }
+  ]},
+  { id: 8, store: "Kojito Palace", amount: 29.99, currency: "YEN", date: "2024-09-14T14:45:00Z", description: "Dinner", subEntries: [
+    { name: "Wok", price: 12.99 },
+    { name: "Pan", price: 10.00 }
+  ]},
+  { id: 9, store: "Jumia Nigeria", amount: 300500, currency: "NGN", date: "2023-05-09T15:45:00Z", description: "Electronics", subEntries: [
+    { name: "Power bank", price: 7500 },
+    { name: "USB cable", price: 2000 },
+    { name: "Earphones", price: 5000 },
+    { name: "Phone holder", price: 3000 },
+    { name: "Screen cleaner", price: 5000 }
+  ]}
 ];
 
 const monthlyBudget = 1000;
-const exchangeRates = { USD: 0.72, EUR: 0.86, GBP: 1, NGN: 0.0017 };
+const exchangeRates = { USD: 0.72, EUR: 0.86, GBP: 1, NGN: 0.0017, YEN: 0.006 };
 
 function NotificationList() {
   const [notifications, setNotifications] = useState(dummyNotifications);
@@ -25,6 +71,7 @@ function NotificationList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
+  const [expandedMonths, setExpandedMonths] = useState({});
 
   useEffect(() => {
     calculateTotals();
@@ -145,8 +192,39 @@ function NotificationList() {
     return notification;
   };
 
+  const toggleMonth = (year, month) => {
+    setExpandedMonths(prev => ({
+      ...prev,
+      [`${year}-${month}`]: !prev[`${year}-${month}`]
+    }));
+  };
+
+  const groupedNotifications = useMemo(() => {
+    const grouped = sortedNotifications.reduce((acc, notification) => {
+      const date = new Date(notification.date);
+      const year = date.getFullYear();
+      const month = date.getMonth();
+
+      if (!acc[year]) {
+        acc[year] = { months: {}, total: 0 };
+      }
+      if (!acc[year].months[month]) {
+        acc[year].months[month] = { transactions: [], total: 0 };
+      }
+
+      const amountInGBP = notification.amount * exchangeRates[notification.currency];
+      acc[year].months[month].transactions.push(notification);
+      acc[year].months[month].total += amountInGBP;
+      acc[year].total += amountInGBP;
+
+      return acc;
+    }, {});
+
+    return grouped;
+  }, [sortedNotifications, exchangeRates]);
+
   return (
-    <div className="max-w-7xl mx-auto mt-8 px-4 sm:px-6 lg:px-8">
+    <div className="max-w-[90%] mx-auto mt-8 px-4 sm:px-6 lg:px-8">
       <h1 className="text-2xl sm:text-3xl font-bold mb-4">Budget Tracker</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
         <div className="bg-white shadow rounded-lg p-4">
@@ -214,65 +292,97 @@ function NotificationList() {
         />
       </Modal>
 
-      <h2 className="text-xl sm:text-2xl font-bold mb-2">Recent Transactions</h2>
-      <div className="overflow-x-auto">
-        <table className="w-full table-auto">
-          <thead>
-            <tr className="bg-gray-200">
-              <th className="px-4 py-2 cursor-pointer" onClick={() => requestSort('store')}>
-                Store {getSortIndicator('store')}
-              </th>
-              <th className="px-4 py-2 cursor-pointer" onClick={() => requestSort('amount')}>
-                Amount {getSortIndicator('amount')}
-              </th>
-              <th className="px-4 py-2 cursor-pointer" onClick={() => requestSort('date')}>
-                Date {getSortIndicator('date')}
-              </th>
-              <th className="px-4 py-2">Description</th>
-              <th className="px-4 py-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sortedNotifications.map((notification) => {
-              const amountInGBP = notification.amount * exchangeRates[notification.currency];
+      <h2 className="text-xl sm:text-2xl font-bold mb-2">Transactions</h2>
+      <div className="w-[90%] mx-auto overflow-x-auto">
+        {Object.entries(groupedNotifications).map(([year, yearData]) => (
+          <div key={year} className="mb-6">
+            <div className="flex justify-between items-center mb-2 bg-gray-100 p-2 rounded-md">
+              <h3 className="text-lg font-semibold">{year}</h3>
+              <span className="font-semibold">{formatCurrency(yearData.total, 'GBP')}</span>
+            </div>
+            {Object.entries(yearData.months).map(([month, monthData]) => {
+              const isExpanded = expandedMonths[`${year}-${month}`] !== false;
+              const monthName = new Date(year, month).toLocaleString('default', { month: 'long' });
               return (
-                <tr key={notification.id} className="border-b" onClick={() => openTransactionModal(notification)}>
-                  <td className="px-4 py-2">{notification.store}</td>
-                  <td className="px-4 py-2">
-                    {formatCurrency(notification.amount, notification.currency)}
-                    {notification.currency !== 'GBP' && (
-                      <span className="ml-2 text-sm text-gray-500">
-                        ({formatCurrency(amountInGBP, 'GBP')})
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-4 py-2">{new Date(notification.date).toLocaleString()}</td>
-                  <td className="px-4 py-2">{notification.description}</td>
-                  <td className="px-4 py-2">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setEditingId(notification.id);
-                      }}
-                      className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded text-sm mr-2"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteEntry(notification.id);
-                      }}
-                      className="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded text-sm"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
+                <div key={`${year}-${month}`} className="mb-4">
+                  <button
+                    onClick={() => toggleMonth(year, month)}
+                    className="flex justify-between items-center w-full bg-gray-50 p-2 rounded-md mb-2"
+                  >
+                    <div className="flex items-center">
+                      {isExpanded ? (
+                        <ChevronDownIcon className="h-5 w-5 mr-2" />
+                      ) : (
+                        <ChevronRightIcon className="h-5 w-5 mr-2" />
+                      )}
+                      <span>{monthName}</span>
+                    </div>
+                    <span className="font-semibold">{formatCurrency(monthData.total, 'GBP')}</span>
+                  </button>
+                  {isExpanded && (
+                    <table className="w-full table-auto">
+                      <thead>
+                        <tr className="bg-gray-200">
+                          <th className="px-4 py-2 cursor-pointer" onClick={() => requestSort('store')}>
+                            Store {getSortIndicator('store')}
+                          </th>
+                          <th className="px-4 py-2 cursor-pointer" onClick={() => requestSort('amount')}>
+                            Amount {getSortIndicator('amount')}
+                          </th>
+                          <th className="px-4 py-2 cursor-pointer" onClick={() => requestSort('date')}>
+                            Date {getSortIndicator('date')}
+                          </th>
+                          <th className="px-4 py-2">Description</th>
+                          <th className="px-4 py-2">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {monthData.transactions.map((notification) => {
+                          const amountInGBP = notification.amount * exchangeRates[notification.currency];
+                          return (
+                            <tr key={notification.id} className="border-b" onClick={() => openTransactionModal(notification)}>
+                              <td className="px-4 py-2">{notification.store}</td>
+                              <td className="px-4 py-2">
+                                {formatCurrency(notification.amount, notification.currency)}
+                                {notification.currency !== 'GBP' && (
+                                  <span className="ml-2 text-sm text-gray-500">
+                                    ({formatCurrency(amountInGBP, 'GBP')})
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-4 py-2">{new Date(notification.date).toLocaleString()}</td>
+                              <td className="px-4 py-2">{notification.description}</td>
+                              <td className="px-4 py-2">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setEditingId(notification.id);
+                                  }}
+                                  className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded text-sm mr-2"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteEntry(notification.id);
+                                  }}
+                                  className="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded text-sm"
+                                >
+                                  Delete
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
               );
             })}
-          </tbody>
-        </table>
+          </div>
+        ))}
       </div>
       <TransactionModal
         transaction={selectedTransaction}

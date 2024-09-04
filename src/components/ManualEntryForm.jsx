@@ -31,6 +31,11 @@ function ManualEntryForm({ onSubmit, onCancel, initialEntry = null }) {
     setEntry({ ...entry, subProducts: [...entry.subProducts, { name: '', price: '' }] });
   };
 
+  const removeSubProduct = (index) => {
+    const updatedSubProducts = entry.subProducts.filter((_, i) => i !== index);
+    setEntry({ ...entry, subProducts: updatedSubProducts });
+  };
+
   const updateSubProduct = (index, field, value) => {
     const updatedSubProducts = entry.subProducts.map((product, i) => 
       i === index ? { ...product, [field]: value } : product
@@ -84,11 +89,22 @@ function ManualEntryForm({ onSubmit, onCancel, initialEntry = null }) {
         />
       </div>
       <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2">
-          Sub Products
-        </label>
+        <div className="flex items-center justify-between mb-2">
+          <label className="block text-gray-700 text-sm font-bold">
+            Sub Products
+          </label>
+          <button
+            type="button"
+            onClick={addSubProduct}
+            className="text-blue-500 hover:text-blue-700 focus:outline-none"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+          </button>
+        </div>
         {entry.subProducts.map((product, index) => (
-          <div key={index} className="flex mb-2">
+          <div key={index} className="flex mb-2 items-center">
             <input
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mr-2"
               type="text"
@@ -98,7 +114,7 @@ function ManualEntryForm({ onSubmit, onCancel, initialEntry = null }) {
               required
             />
             <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mr-2"
               type="number"
               step="0.01"
               placeholder="Price"
@@ -106,15 +122,19 @@ function ManualEntryForm({ onSubmit, onCancel, initialEntry = null }) {
               onChange={(e) => updateSubProduct(index, 'price', e.target.value)}
               required
             />
+            {entry.subProducts.length > 1 && (
+              <button
+                type="button"
+                onClick={() => removeSubProduct(index)}
+                className="text-red-500 hover:text-red-700 focus:outline-none"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            )}
           </div>
         ))}
-        <button
-          type="button"
-          onClick={addSubProduct}
-          className="mt-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-        >
-          Add Product
-        </button>
       </div>
       <div className="flex items-center justify-between">
         <button
