@@ -22,3 +22,20 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Terraform files
+infra/.terraform/
+infra/*.tfstate
+infra/*.tfstate.*
+infra/*.tfvars
+infra/.terraformrc
+infra/terraform.rc
+infra/crash.log
+infra/crash.*.log
+infra/.terraform.lock.hcl
+
+# Ignore override files as they are usually used to override resources locally and don't need to be committed
+infra/override.tf
+infra/override.tf.json
+infra/*_override.tf
+infra/*_override.tf.json
