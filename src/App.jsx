@@ -1,11 +1,14 @@
 import React from 'react'
 import NotificationList from './components/NotificationList'
+import { ThemeProvider } from './contexts/ThemeContext'
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-100">
-      <NotificationList />
-    </div>
+    <ThemeProvider>
+      <div className="min-h-screen bg-white dark:bg-gray-800 text-black dark:text-white">
+        <NotificationList />
+      </div>
+    </ThemeProvider>
   )
 }
 

@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import ManualEntryForm from './ManualEntryForm';
 import TransactionModal from './TransactionModal';
 import Modal from './Modal';
-import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
+import ThemeToggle from './ThemeToggle';
+import { ChevronDownIcon, ChevronRightIcon, PlusIcon } from '@heroicons/react/20/solid';
 import { formatDateToHumanReadable } from '../utils/dateUtils';
 import { dummyNotifications } from '../dummyData';
 
@@ -172,61 +173,61 @@ function NotificationList() {
 
   return (
     <div className="max-w-[90%] mx-auto mt-8 px-4 sm:px-6 lg:px-8">
-      <h1 className="text-2xl sm:text-3xl font-bold mb-4">Budget Tracker</h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl sm:text-3xl font-bold">Budget Tracker</h1>
+        <ThemeToggle />
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-        <div className="bg-white shadow rounded-lg p-4">
+        <div className="bg-white dark:bg-gray-700 shadow rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-2">Monthly Budget</h2>
           <p className="text-xl sm:text-2xl font-bold">{formatCurrency(monthlyBudget, 'GBP')}</p>
         </div>
-        <div className="bg-white shadow rounded-lg p-4">
+        <div className="bg-white dark:bg-gray-700 shadow rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-2">Remaining</h2>
-          <p className="text-xl sm:text-2xl font-bold text-green-600">{formatCurrency(remaining, 'GBP')}</p>
+          <p className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400">{formatCurrency(remaining, 'GBP')}</p>
         </div>
-        <div className="bg-white shadow rounded-lg p-4">
+        <div className="bg-white dark:bg-gray-700 shadow rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-2">Spent</h2>
-          <p className="text-xl sm:text-2xl font-bold text-red-600">{formatCurrency(totalSpent, 'GBP')}</p>
-          <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+          <p className="text-xl sm:text-2xl font-bold text-red-600 dark:text-red-400">{formatCurrency(totalSpent, 'GBP')}</p>
+          <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2.5 mt-2">
             <div className="bg-blue-600 h-2.5 rounded-full" style={{width: `${(totalSpent / monthlyBudget) * 100}%`}}></div>
           </div>
         </div>
       </div>
       <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-4">
-        <div className="flex-1">
-          <label htmlFor="file-upload" className="flex items-center justify-center w-full h-12 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none">
-            <span className="flex items-center space-x-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-              </svg>
-              <span className="font-medium text-gray-600">
-                Upload Receipt
-              </span>
-            </span>
+        <div className="flex-grow">
+          <input
+            type="text"
+            placeholder="Search by store, description, amount, or date..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div className="flex space-x-2">
+          <label htmlFor="file-upload" className="flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:mr-2 sm:-ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+            <span className="hidden sm:inline">Upload</span>
             <input
               id="file-upload"
               name="file-upload"
               type="file"
               accept="image/*"
-              className="hidden"
+              className="sr-only"
               onChange={handleFileUpload}
             />
           </label>
+          <button
+            onClick={() => setShowManualEntry(true)}
+            className="p-2 sm:px-4 sm:py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+          >
+            <PlusIcon className="h-5 w-5 sm:hidden" />
+            <span className="hidden sm:inline">Add Entry</span>
+          </button>
         </div>
-        <button
-          onClick={() => setShowManualEntry(true)}
-          className="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
-        >
-          Add Manual Entry
-        </button>
-      </div>
-
-      <div className="mb-4">
-        <input
-          type="text"
-          placeholder="Search by store, description, amount, or date..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
       </div>
 
       <Modal isOpen={showManualEntry} onClose={() => setShowManualEntry(false)}>
@@ -243,7 +244,7 @@ function NotificationList() {
       <div className="w-[90%] mx-auto overflow-x-auto">
         {Object.entries(groupedNotifications).map(([year, yearData]) => (
           <div key={year} className="mb-6">
-            <div className="flex justify-between items-center mb-2 bg-gray-100 p-2 rounded-md">
+            <div className="flex justify-between items-center mb-2 bg-gray-100 dark:bg-gray-700 p-2 rounded-md">
               <h3 className="text-lg font-semibold">{year}</h3>
               <span className="font-semibold">{formatCurrency(yearData.total, 'GBP')}</span>
             </div>
@@ -254,7 +255,7 @@ function NotificationList() {
                 <div key={`${year}-${month}`} className="mb-4">
                   <button
                     onClick={() => toggleMonth(year, month)}
-                    className="flex justify-between items-center w-full bg-gray-50 p-2 rounded-md mb-2"
+                    className="flex justify-between items-center w-full bg-gray-50 dark:bg-gray-600 p-2 rounded-md mb-2"
                   >
                     <div className="flex items-center">
                       {isExpanded ? (
@@ -269,7 +270,7 @@ function NotificationList() {
                   {isExpanded && (
                     <table className="w-full table-auto">
                       <thead>
-                        <tr className="bg-gray-200">
+                        <tr className="bg-gray-200 dark:bg-gray-700">
                           <th className="px-4 py-2 cursor-pointer" onClick={() => requestSort('store')}>
                             Store {getSortIndicator('store')}
                           </th>
@@ -287,12 +288,12 @@ function NotificationList() {
                         {monthData.transactions.map((notification) => {
                           const amountInGBP = notification.amount * exchangeRates[notification.currency];
                           return (
-                            <tr key={notification.id} className="border-b" onClick={() => openTransactionModal(notification)}>
+                            <tr key={notification.id} className="border-b dark:border-gray-700" onClick={() => openTransactionModal(notification)}>
                               <td className="px-4 py-2">{notification.store}</td>
                               <td className="px-4 py-2">
                                 {formatCurrency(notification.amount, notification.currency)}
                                 {notification.currency !== 'GBP' && (
-                                  <span className="ml-2 text-sm text-gray-500">
+                                  <span className="ml-2 text-sm text-gray-500 dark:text-gray-300">
                                     ({formatCurrency(amountInGBP, 'GBP')})
                                   </span>
                                 )}
