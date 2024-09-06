@@ -5,7 +5,7 @@ function ManualEntryForm({ onSubmit, onCancel, initialEntry = null }) {
     store: '',
     amount: '',
     currency: 'GBP',
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toLocaleDateString(),
     subProducts: [{ name: '', price: '' }]
   });
 
@@ -37,7 +37,7 @@ function ManualEntryForm({ onSubmit, onCancel, initialEntry = null }) {
   };
 
   const updateSubProduct = (index, field, value) => {
-    const updatedSubProducts = entry.subProducts.map((product, i) => 
+    const updatedSubProducts = entry.subProducts.map((product, i) =>
       i === index ? { ...product, [field]: value } : product
     );
     setEntry({ ...entry, subProducts: updatedSubProducts });
