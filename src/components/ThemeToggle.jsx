@@ -1,4 +1,3 @@
-import React from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 
 function ThemeToggle() {
@@ -7,7 +6,7 @@ function ThemeToggle() {
   return (
     <button
       onClick={toggleDarkMode}
-      className="p-2 rounded-full bg-gray-200 dark:bg-gray-600"
+      className="p-2 w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 dark:bg-gray-600"
     >
       {isDarkMode ? '🌞' : '🌙'}
     </button>

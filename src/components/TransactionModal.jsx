@@ -1,4 +1,3 @@
-import React from 'react';
 import Modal from './Modal';
 
 function TransactionModal({ transaction, onClose, formatCurrency }) {
