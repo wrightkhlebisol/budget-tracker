@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from 'react';
 import ManualEntryForm from './ManualEntryForm';
 import TransactionModal from './TransactionModal';
 import Modal from './Modal';
-import ThemeToggle from './ThemeToggle';
 import { ChevronDownIcon, ChevronRightIcon, PlusIcon } from '@heroicons/react/20/solid';
 import { formatDateToHumanReadable } from '../utils/dateUtils';
 import { dummyNotifications } from '../dummyData';
@@ -172,42 +171,38 @@ function NotificationList() {
   }, [sortedNotifications, exchangeRates]);
 
   return (
-    <div className="max-w-[90%] mx-auto mt-8 px-4 sm:px-6 lg:px-8">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl sm:text-3xl font-bold">Budget Tracker</h1>
-        <ThemeToggle />
-      </div>
-
+    <div className="max-w-[90%] min-w-[320px] mx-auto mt-8 px-4 sm:px-6 lg:px-8">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-        <div className="bg-white dark:bg-gray-700 shadow rounded-lg p-4">
-          <h2 className="text-lg font-semibold mb-2">Monthly Budget</h2>
-          <p className="text-xl sm:text-2xl font-bold">{formatCurrency(monthlyBudget, 'GBP')}</p>
+        <div className="bg-white dark:bg-gray-700 shadow rounded-lg p-3 sm:p-4">
+          <h2 className="text-sm sm:text-base font-semibold mb-1 sm:mb-2">Monthly Budget</h2>
+          <p className="text-lg sm:text-xl md:text-2xl font-bold truncate">{formatCurrency(monthlyBudget, 'GBP')}</p>
         </div>
-        <div className="bg-white dark:bg-gray-700 shadow rounded-lg p-4">
-          <h2 className="text-lg font-semibold mb-2">Remaining</h2>
-          <p className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400">{formatCurrency(remaining, 'GBP')}</p>
+        <div className="bg-white dark:bg-gray-700 shadow rounded-lg p-3 sm:p-4">
+          <h2 className="text-sm sm:text-base font-semibold mb-1 sm:mb-2">Remaining</h2>
+          <p className="text-lg sm:text-xl md:text-2xl font-bold text-green-600 dark:text-green-400 truncate">{formatCurrency(remaining, 'GBP')}</p>
         </div>
-        <div className="bg-white dark:bg-gray-700 shadow rounded-lg p-4">
-          <h2 className="text-lg font-semibold mb-2">Spent</h2>
-          <p className="text-xl sm:text-2xl font-bold text-red-600 dark:text-red-400">{formatCurrency(totalSpent, 'GBP')}</p>
-          <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2.5 mt-2">
-            <div className="bg-blue-600 h-2.5 rounded-full" style={{width: `${(totalSpent / monthlyBudget) * 100}%`}}></div>
+        <div className="bg-white dark:bg-gray-700 shadow rounded-lg p-3 sm:p-4">
+          <h2 className="text-sm sm:text-base font-semibold mb-1 sm:mb-2">Spent</h2>
+          <p className="text-lg sm:text-xl md:text-2xl font-bold text-red-600 dark:text-red-400 truncate">{formatCurrency(totalSpent, 'GBP')}</p>
+          <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2 mt-2">
+            <div className="bg-blue-600 h-2 rounded-full" style={{width: `${(totalSpent / monthlyBudget) * 100}%`}}></div>
           </div>
         </div>
       </div>
-      <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-4">
+
+      <div className="flex items-center space-x-2 mb-4">
         <div className="flex-grow">
           <input
             type="text"
-            placeholder="Search by store, description, amount, or date..."
+            placeholder="Search..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-        <div className="flex space-x-2">
-          <label htmlFor="file-upload" className="flex items-center justify-center p-2 sm:px-4 sm:py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:mr-2 sm:-ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="flex-shrink-0">
+          <label htmlFor="file-upload" className="flex items-center justify-center p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
             </svg>
             <span className="hidden sm:inline">Upload</span>
@@ -220,11 +215,13 @@ function NotificationList() {
               onChange={handleFileUpload}
             />
           </label>
+        </div>
+        <div className="flex-shrink-0">
           <button
             onClick={() => setShowManualEntry(true)}
-            className="p-2 sm:px-4 sm:py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            className="flex items-center p-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
           >
-            <PlusIcon className="h-5 w-5 sm:hidden" />
+            <PlusIcon className="h-5 w-5 sm:mr-2" />
             <span className="hidden sm:inline">Add Entry</span>
           </button>
         </div>
