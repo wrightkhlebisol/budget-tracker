@@ -3,6 +3,7 @@ import ManualEntryForm from './ManualEntryForm';
 import TransactionModal from './TransactionModal';
 import Modal from './Modal';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
+import { formatDateToHumanReadable } from '../utils/dateUtils';
 
 const dummyNotifications = [
   { id: 1, store: "Walmart", amount: 52.99, currency: "USD", date: "2023-04-15T10:30:00Z", description: "Groceries", subEntries: [
@@ -134,10 +135,10 @@ function NotificationList() {
     const storeName = notification.store.toLowerCase();
     const description = notification.description.toLowerCase();
     const amount = notification.amount.toString();
-    const date = new Date(notification.date).toLocaleDateString();
-    
-    return storeName.includes(searchLower) || 
-           description.includes(searchLower) || 
+    const date = formatDateToHumanReadable(notification.date);
+
+    return storeName.includes(searchLower) ||
+           description.includes(searchLower) ||
            amount.includes(searchLower) ||
            date.includes(searchLower);
   });
@@ -283,12 +284,12 @@ function NotificationList() {
       </div>
 
       <Modal isOpen={showManualEntry} onClose={() => setShowManualEntry(false)}>
-        <ManualEntryForm 
+        <ManualEntryForm
           onSubmit={(entry) => {
             addManualEntry(entry);
             setShowManualEntry(false);
           }}
-          onCancel={() => setShowManualEntry(false)} 
+          onCancel={() => setShowManualEntry(false)}
         />
       </Modal>
 
@@ -350,7 +351,7 @@ function NotificationList() {
                                   </span>
                                 )}
                               </td>
-                              <td className="px-4 py-2">{new Date(notification.date).toLocaleString()}</td>
+                              <td className="px-4 py-2">{formatDateToHumanReadable(notification.date)}</td>
                               <td className="px-4 py-2">{notification.description}</td>
                               <td className="px-4 py-2">
                                 <button
