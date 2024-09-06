@@ -5,7 +5,6 @@ import { useAuth } from './contexts/AuthContext'
 import UserMenu from './components/UserMenu'
 import ThemeToggle from './components/ThemeToggle';
 
-
 function LoginForm() {
   const { login } = useAuth();
 
@@ -28,22 +27,30 @@ function AppContent() {
   const { user } = useAuth();
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-800 text-black dark:text-white">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-black dark:text-white">
       {user ? (
         <>
-          <div className="flex justify-between items-center p-4">
-            <h1 className="text-2xl font-bold">Budget Tracker</h1>
-            <div className="flex items-center space-x-4">
-              <UserMenu />
-              <ThemeToggle />
+          <header className="bg-white dark:bg-gray-800 shadow">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+              <div className="flex justify-between items-center">
+                <h1 className="text-2xl font-bold">Budget Tracker</h1>
+                <div className="flex items-center space-x-4">
+                  <UserMenu />
+                  <ThemeToggle />
+                </div>
+              </div>
             </div>
-          </div>
-          <NotificationList />
+          </header>
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <NotificationList />
+          </main>
         </>
       ) : (
-        <div className="max-w-md mx-auto mt-10 p-6 bg-white dark:bg-gray-700 rounded-lg shadow-md">
-          <h2 className="text-2xl font-bold mb-4">Login</h2>
-          <LoginForm />
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="max-w-md w-full mx-auto mt-10 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+            <h2 className="text-2xl font-bold mb-4">Login</h2>
+            <LoginForm />
+          </div>
         </div>
       )}
     </div>

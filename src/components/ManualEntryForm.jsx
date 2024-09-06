@@ -44,13 +44,11 @@ function ManualEntryForm({ onSubmit, onCancel, initialEntry = null }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="store">
-          Store
-        </label>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label htmlFor="store" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Store</label>
         <input
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          className="mt-1 appearance-none border leading-tight focus:outline-none focus:shadow-outline block w-full py-2 px-3 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
           id="store"
           type="text"
           placeholder="Store name"
@@ -60,11 +58,11 @@ function ManualEntryForm({ onSubmit, onCancel, initialEntry = null }) {
         />
       </div>
       <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="currency">
+        <label className="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-300" htmlFor="currency">
           Currency
         </label>
         <select
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline dark:bg-gray-700 dark:border-gray-600 dark:text-white"
           id="currency"
           value={entry.currency}
           onChange={(e) => setEntry({ ...entry, currency: e.target.value })}
@@ -76,11 +74,11 @@ function ManualEntryForm({ onSubmit, onCancel, initialEntry = null }) {
         </select>
       </div>
       <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="date">
+        <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" htmlFor="date">
           Date
         </label>
         <input
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline dark:bg-gray-700 dark:border-gray-600 dark:text-white"
           id="date"
           type="date"
           value={entry.date}
@@ -90,7 +88,7 @@ function ManualEntryForm({ onSubmit, onCancel, initialEntry = null }) {
       </div>
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
-          <label className="block text-gray-700 text-sm font-bold">
+          <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold">
             Sub Products
           </label>
           <button
@@ -106,7 +104,7 @@ function ManualEntryForm({ onSubmit, onCancel, initialEntry = null }) {
         {entry.subProducts.map((product, index) => (
           <div key={index} className="flex mb-2 items-center">
             <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mr-2"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mr-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               type="text"
               placeholder="Product name"
               value={product.name}
@@ -114,7 +112,7 @@ function ManualEntryForm({ onSubmit, onCancel, initialEntry = null }) {
               required
             />
             <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mr-2"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mr-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               type="number"
               step="0.01"
               placeholder="Price"
@@ -136,19 +134,19 @@ function ManualEntryForm({ onSubmit, onCancel, initialEntry = null }) {
           </div>
         ))}
       </div>
-      <div className="flex items-center justify-between">
+      <div className="flex justify-end space-x-2">
         <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-          type="submit"
-        >
-          {initialEntry ? 'Update Entry' : 'Add Entry'}
-        </button>
-        <button
-          className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
           type="button"
           onClick={onCancel}
+          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
         >
           Cancel
+        </button>
+        <button
+          type="submit"
+          className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+          {initialEntry ? 'Update' : 'Add'} Entry
         </button>
       </div>
     </form>

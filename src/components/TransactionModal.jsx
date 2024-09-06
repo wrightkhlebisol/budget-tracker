@@ -28,14 +28,14 @@ function TransactionModal({ transaction, onClose, formatCurrency }) {
             <h3 className="text-xl font-semibold mb-2">Sub-entries</h3>
             <table className="w-full border-collapse">
               <thead>
-                <tr className="bg-gray-100">
+                <tr className="bg-gray-100 dark:bg-gray-700">
                   <th className="border p-2 text-left">Item</th>
                   <th className="border p-2 text-right">Price</th>
                 </tr>
               </thead>
               <tbody>
                 {transaction.subEntries.map((entry, index) => (
-                  <tr key={index} className="border-b">
+                  <tr key={index} className="border-b dark:border-gray-600">
                     <td className="border p-2">{entry.name}</td>
                     <td className="border p-2 text-right">{formatCurrency(entry.price, transaction.currency)}</td>
                   </tr>
