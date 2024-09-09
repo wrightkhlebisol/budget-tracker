@@ -1,22 +1,16 @@
 import { useState, useEffect, useMemo } from 'react';
-import { db } from '../firebase';
-import { collection, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
-import { useAuth } from '../contexts/AuthContext';
 import ManualEntryForm from './ManualEntryForm';
 import TransactionModal from './TransactionModal';
 import Modal from './Modal';
 import { ChevronDownIcon, ChevronRightIcon, PlusIcon } from '@heroicons/react/20/solid';
 import { formatDateToHumanReadable } from '../utils/dateUtils';
+import { dummyNotifications } from '../dummyData';
 
 const monthlyBudget = 1000;
 const exchangeRates = { USD: 0.72, EUR: 0.86, GBP: 1, NGN: 0.0017, YEN: 0.006 };
 
 function NotificationList() {
-  // Uncomment the next line to test the ErrorBoundary
-  // throw new Error("Test error for ErrorBoundary");
-
-  const { user } = useAuth();
-  const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications] = useState(dummyNotifications);
   const [totalSpent, setTotalSpent] = useState(0);
   const [remaining, setRemaining] = useState(monthlyBudget);
   const [showManualEntry, setShowManualEntry] = useState(false);
@@ -25,29 +19,6 @@ function NotificationList() {
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
   const [expandedMonths, setExpandedMonths] = useState({});
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    if (user) {
-      const q = query(collection(db, 'transactions'), where('userId', '==', user.uid));
-      const unsubscribe = onSnapshot(q,
-        (querySnapshot) => {
-          const transactions = querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          }));
-          setNotifications(transactions);
-          setError(null); // Clear any previous errors
-        },
-        (error) => {
-          console.error("Error fetching transactions:", error);
-          setError("Failed to load transactions. Please try again later.");
-        }
-      );
-
-      return () => unsubscribe();
-    }
-  }, [user]);
 
   useEffect(() => {
     calculateTotals();
@@ -86,40 +57,23 @@ function NotificationList() {
     }
   };
 
-  const addManualEntry = async (entry) => {
-    try {
-      await addDoc(collection(db, 'transactions'), {
-        ...entry,
-        userId: user.uid,
-        date: new Date().toISOString()
-      });
-      setShowManualEntry(false);
-      setError(null);
-    } catch (error) {
-      console.error("Error adding entry:", error);
-      setError("Failed to add entry. Please try again.");
-    }
+  const addManualEntry = (entry) => {
+    const newNotification = {
+      id: notifications.length + 1,
+      ...entry,
+      date: new Date().toISOString()
+    };
+    setNotifications([...notifications, newNotification]);
+    setShowManualEntry(false);
   };
 
-  const updateEntry = async (updatedEntry) => {
-    try {
-      await updateDoc(doc(db, 'transactions', updatedEntry.id), updatedEntry);
-      setEditingId(null);
-      setError(null);
-    } catch (error) {
-      console.error("Error updating entry:", error);
-      setError("Failed to update entry. Please try again.");
-    }
+  const updateEntry = (updatedEntry) => {
+    setNotifications(notifications.map(n => n.id === updatedEntry.id ? updatedEntry : n));
+    setEditingId(null);
   };
 
-  const deleteEntry = async (id) => {
-    try {
-      await deleteDoc(doc(db, 'transactions', id));
-      setError(null);
-    } catch (error) {
-      console.error("Error deleting entry:", error);
-      setError("Failed to delete entry. Please try again.");
-    }
+  const deleteEntry = (id) => {
+    setNotifications(notifications.filter(n => n.id !== id));
   };
 
   const filteredNotifications = notifications.filter(notification => {
@@ -218,12 +172,6 @@ function NotificationList() {
 
   return (
     <div className="max-w-[90%] min-w-[320px] mx-auto mt-8 px-4 sm:px-6 lg:px-8">
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-          <strong className="font-bold">Error: </strong>
-          <span className="block sm:inline">{error}</span>
-        </div>
-      )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
         <div className="bg-white dark:bg-gray-700 shadow rounded-lg p-3 sm:p-4">
           <h2 className="text-sm sm:text-base font-semibold mb-1 sm:mb-2">Monthly Budget</h2>
