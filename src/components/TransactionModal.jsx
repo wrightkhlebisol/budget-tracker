@@ -23,8 +23,8 @@ function TransactionModal({ transaction, onClose, formatCurrency }) {
         <p className="mb-2"><strong>Total Amount:</strong> {formatCurrency(transaction.amount, transaction.currency)}</p>
         <p className="mb-4"><strong>Description:</strong> {transaction.description}</p>
 
-        {transaction.subEntries && transaction.subEntries.length > 0 && (
-          <div>
+        {transaction.subProducts && transaction.subProducts.length > 0 && (
+           <div>
             <h3 className="text-xl font-semibold mb-2">Sub-entries</h3>
             <table className="w-full border-collapse">
               <thead>
@@ -34,7 +34,7 @@ function TransactionModal({ transaction, onClose, formatCurrency }) {
                 </tr>
               </thead>
               <tbody>
-                {transaction.subEntries.map((entry, index) => (
+                {transaction.subProducts.map((entry, index) => (
                   <tr key={index} className="border-b dark:border-gray-600">
                     <td className="border p-2">{entry.name}</td>
                     <td className="border p-2 text-right">{formatCurrency(entry.price, transaction.currency)}</td>
